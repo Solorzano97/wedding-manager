@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Heart, Sparkles, Calendar, Users, MessageCircle, Star, ArrowRight, Check, Camera, Music, Utensils, Flower2 } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
+import Footer from '../components/layout/Footer'
 
 const features = [
   { icon: Calendar, title: 'Planifica sin estrés', desc: 'Organiza cada detalle de tu boda con herramientas intuitivas y un asistente inteligente.' },
@@ -50,8 +51,8 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-lg text-stone-500 max-w-lg leading-relaxed animate-fade-up" style={{ animationDelay: '0.15s' }}>
-                Todo lo que necesitas para crear el día más especial de tu vida. 
-                Proveedores verificados, herramientas intuitivas y un asistente 
+                Todo lo que necesitas para crear el día más especial de tu vida.
+                Proveedores verificados, herramientas intuitivas y un asistente
                 inteligente que te guía en cada paso.
               </p>
 
@@ -67,7 +68,7 @@ export default function LandingPage() {
 
               <div className="flex items-center gap-6 pt-4 animate-fade-up" style={{ animationDelay: '0.45s' }}>
                 <div className="flex -space-x-3">
-                  {[1,2,3,4].map(i => (
+                  {[1, 2, 3, 4].map(i => (
                     <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gradient-to-br from-sage-300 to-sage-500 flex items-center justify-center text-white text-xs font-bold">
                       {String.fromCharCode(64 + i)}
                     </div>
@@ -220,47 +221,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ FOOTER ═══ */}
-      <footer className="bg-stone-900 text-stone-400 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-6 h-6 text-blush-400" />
-                <span className="font-display text-2xl text-white">Celebra</span>
-              </div>
-              <p className="text-sm leading-relaxed">La plataforma de gestión de bodas más completa de Guatemala.</p>
-            </div>
-            <div>
-              <h4 className="font-medium text-white mb-4">Para Novios</h4>
-              <nav className="space-y-2 text-sm">
-                <a href="#" className="block hover:text-white transition-colors">Planificador</a>
-                <a href="#" className="block hover:text-white transition-colors">Invitaciones</a>
-                <a href="#" className="block hover:text-white transition-colors">Sitio web</a>
-              </nav>
-            </div>
-            <div>
-              <h4 className="font-medium text-white mb-4">Para Proveedores</h4>
-              <nav className="space-y-2 text-sm">
-                <a href="#" className="block hover:text-white transition-colors">Registrarse</a>
-                <a href="#" className="block hover:text-white transition-colors">Planes</a>
-                <a href="#" className="block hover:text-white transition-colors">Recursos</a>
-              </nav>
-            </div>
-            <div>
-              <h4 className="font-medium text-white mb-4">Compañía</h4>
-              <nav className="space-y-2 text-sm">
-                <a href="#" className="block hover:text-white transition-colors">Acerca de</a>
-                <a href="#" className="block hover:text-white transition-colors">Contacto</a>
-                <a href="#" className="block hover:text-white transition-colors">Privacidad</a>
-              </nav>
-            </div>
-          </div>
-          <div className="border-t border-stone-800 mt-12 pt-8 text-center text-sm">
-            <p>© 2026 Celebra. Todos los derechos reservados.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
