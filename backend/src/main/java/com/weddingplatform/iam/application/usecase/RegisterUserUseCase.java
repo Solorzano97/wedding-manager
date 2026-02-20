@@ -25,7 +25,8 @@ public class RegisterUserUseCase {
     private final PasswordService passwordService;
     private final CoupleProfileRepository coupleProfileRepository;
 
-    public RegisterUserUseCase(UserRepository userRepository, PasswordService passwordService , CoupleProfileRepository coupleProfileRepository) {
+    public RegisterUserUseCase(UserRepository userRepository, PasswordService passwordService,
+                               CoupleProfileRepository coupleProfileRepository) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.coupleProfileRepository = coupleProfileRepository;
@@ -39,21 +40,25 @@ public class RegisterUserUseCase {
         if (userRepository.existsByEmail(request.email())) {
             throw new DuplicateResourceException("Usuario", "email", request.email());
         }
+
+        // 1. Create user
         User newUser = new User(null, UUID.randomUUID().toString(),
             request.email().toLowerCase().trim(),
             passwordService.encode(request.password()),
             true, null, null, List.of(request.role()), null);
         User saved = userRepository.save(newUser);
 
+        // 2. If role is 'couple', automatically create CoupleProfile
         if ("couple".equals(request.role())) {
             CoupleProfile profile = new CoupleProfile(
-                    null, saved.id(),
-                    request.firstName(), request.lastName(),
-                    null, null, null
+                null, saved.id(),
+                request.firstName(), request.lastName(),
+                null, null, null
             );
             coupleProfileRepository.save(profile);
             log.info("CoupleProfile created for user: {}", saved.email());
         }
+
         log.info("User registered: {} role: {}", saved.email(), request.role());
         return saved;
     }
