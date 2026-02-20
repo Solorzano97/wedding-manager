@@ -1,0 +1,66 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: wedding-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret_2026
+      MYSQL_DATABASE: wedding_platform
+      MYSQL_USER: wedding_user
+      MYSQL_PASSWORD: wedding_pass_2026
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_secret_2026"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - wedding-net
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wedding-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: wedding_platform
+      DB_USERNAME: wedding_user
+      DB_PASSWORD: wedding_pass_2026
+      DDL_AUTO: update
+      JWT_SECRET: ThisIsAVeryLongSecretKeyForJWTTokenGeneration2026WeddingPlatformApp!!
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173,http://localhost
+    ports:
+      - "8080:8080"
+    networks:
+      - wedding-net
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: wedding-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+    networks:
+      - wedding-net
+
+volumes:
+  mysql_data:
+
+networks:
+  wedding-net:
+    driver: bridge
