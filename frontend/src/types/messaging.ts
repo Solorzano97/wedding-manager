@@ -1,0 +1,2 @@
+export interface ConversationResponse { id: number; uuid: string; weddingId: number; vendorProfileId: number; coupleProfileId: number; status: string; lastMessageAt: string | null; unreadCount: number; createdAt: string }
+export interface MessageResponse { id: number; conversationId: number; senderUserId: number; content: string; messageType: string; attachmentUrl: string | null; read: boolean; readAt: string | null; createdAt: string }

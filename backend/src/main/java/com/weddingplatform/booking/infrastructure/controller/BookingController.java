@@ -92,4 +92,10 @@ public class BookingController {
         @PathVariable String uuid, @Valid @RequestBody UpdateQuoteStatusRequest req) {
         return ResponseEntity.ok(quotesUC.updateStatus(uuid, req));
     }
+
+    @PutMapping("/vendors/me/quotes/{uuid}/respond") @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<QuoteResponse> respondToQuote(
+        @PathVariable String uuid, @Valid @RequestBody RespondQuoteRequest req) {
+        return ResponseEntity.ok(quotesUC.respondToQuote(uuid, req));
+    }
 }

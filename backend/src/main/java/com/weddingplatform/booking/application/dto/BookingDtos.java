@@ -11,10 +11,17 @@ public final class BookingDtos {
     // --- Quotes ---
     public record CreateQuoteRequest(@NotNull Long vendorProfileId, Long vendorServiceId,
         LocalDate eventDate, Integer guestCount, String customRequirements, String notes) {}
+
+    public record RespondQuoteRequest(
+        @NotNull BigDecimal subtotal, BigDecimal discountAmount, BigDecimal taxAmount,
+        @NotNull BigDecimal totalAmount, LocalDate validUntil, String notes) {}
+
     public record QuoteResponse(Long id, String uuid, Long weddingId, Long vendorProfileId,
         Long vendorServiceId, String status, LocalDate eventDate, Integer guestCount,
+        BigDecimal subtotal, BigDecimal discountAmount, BigDecimal taxAmount,
         BigDecimal totalAmount, String currencyCode, LocalDate validUntil,
         String customRequirements, String notes, LocalDateTime createdAt) {}
+
     public record UpdateQuoteStatusRequest(@NotBlank String status) {}
 
     // --- Appointments ---

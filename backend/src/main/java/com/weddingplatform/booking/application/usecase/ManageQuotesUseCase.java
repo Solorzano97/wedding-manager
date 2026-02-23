@@ -31,6 +31,20 @@ public class ManageQuotesUseCase {
         return toResponse(quoteRepo.save(quote));
     }
 
+    /** Vendor responds to a quote request with pricing details and sends it */
+    @Transactional
+    public QuoteResponse respondToQuote(String uuid, RespondQuoteRequest req) {
+        Quote q = quoteRepo.findByUuid(uuid)
+            .orElseThrow(() -> new ResourceNotFoundException("Quote", "uuid", uuid));
+        BigDecimal discount = req.discountAmount() != null ? req.discountAmount() : BigDecimal.ZERO;
+        BigDecimal tax = req.taxAmount() != null ? req.taxAmount() : BigDecimal.ZERO;
+        Quote updated = new Quote(q.id(), q.uuid(), q.weddingId(), q.vendorProfileId(), q.vendorServiceId(),
+            q.requestedById(), "sent", q.eventDate(), q.guestCount(), q.customRequirements(),
+            req.subtotal(), discount, tax, req.totalAmount(),
+            q.currencyCode(), req.validUntil(), req.notes(), q.createdAt());
+        return toResponse(quoteRepo.save(updated));
+    }
+
     @Transactional(readOnly = true)
     public PageResponse<QuoteResponse> getByWedding(Long weddingId, Pageable pageable) {
         return PageResponse.of(quoteRepo.findByWeddingId(weddingId, pageable).map(this::toResponse));
@@ -54,7 +68,7 @@ public class ManageQuotesUseCase {
     private QuoteResponse toResponse(Quote q) {
         return new QuoteResponse(q.id(), q.uuid(), q.weddingId(), q.vendorProfileId(),
             q.vendorServiceId(), q.status(), q.eventDate(), q.guestCount(),
-            q.totalAmount(), q.currencyCode(), q.validUntil(),
-            q.customRequirements(), q.notes(), q.createdAt());
+            q.subtotal(), q.discountAmount(), q.taxAmount(), q.totalAmount(),
+            q.currencyCode(), q.validUntil(), q.customRequirements(), q.notes(), q.createdAt());
     }
 }
