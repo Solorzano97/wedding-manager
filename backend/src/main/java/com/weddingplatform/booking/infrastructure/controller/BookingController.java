@@ -98,4 +98,13 @@ public class BookingController {
         @PathVariable String uuid, @Valid @RequestBody RespondQuoteRequest req) {
         return ResponseEntity.ok(quotesUC.respondToQuote(uuid, req));
     }
+
+    // === PUBLIC AVAILABILITY ===
+    @GetMapping("/vendors/{vendorProfileId}/booked-slots")
+    public ResponseEntity<java.util.List<BookedSlotResponse>> getBookedSlots(
+        @PathVariable Long vendorProfileId,
+        @RequestParam String from, @RequestParam String to) {
+        return ResponseEntity.ok(apptsUC.getBookedSlots(vendorProfileId,
+            java.time.LocalDate.parse(from), java.time.LocalDate.parse(to)));
+    }
 }

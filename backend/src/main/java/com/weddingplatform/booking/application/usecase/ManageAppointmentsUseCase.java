@@ -8,6 +8,8 @@ import com.weddingplatform.wedding.domain.repository.CoupleProfileRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,6 +39,14 @@ public class ManageAppointmentsUseCase {
     @Transactional(readOnly = true)
     public PageResponse<AppointmentResponse> getByVendorProfile(Long vendorProfileId, Pageable pageable) {
         return PageResponse.of(apptRepo.findByVendorProfileId(vendorProfileId, pageable).map(this::toResponse));
+    }
+
+    /** Returns booked slots for a vendor in a date range (for availability calendar) */
+    @Transactional(readOnly = true)
+    public List<BookedSlotResponse> getBookedSlots(Long vendorProfileId, LocalDate from, LocalDate to) {
+        return apptRepo.findConfirmedByVendor(vendorProfileId, from, to).stream()
+            .map(a -> new BookedSlotResponse(a.appointmentDate(), a.startTime(), a.endTime(), a.meetingType(), a.status()))
+            .toList();
     }
 
     @Transactional

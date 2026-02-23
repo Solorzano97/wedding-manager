@@ -192,15 +192,63 @@ function AppointmentModal({ vendorProfileId, vendorName, weddingId, onClose }: {
   const [startTime, setStartTime] = useState('10:00')
   const [endTime, setEndTime] = useState('11:00')
   const [meetingType, setMeetingType] = useState('video_call')
+  const [meetingUrl, setMeetingUrl] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [location, setLocation] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
+  const [bookedSlots, setBookedSlots] = useState<{ date: string; startTime: string; endTime: string }[]>([])
+
+  // Load booked slots when date changes (load the whole month)
+  useEffect(() => {
+    if (!date) return
+    const d = new Date(date + 'T00:00:00')
+    const from = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]
+    const to = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0]
+    bookingService.getBookedSlots(vendorProfileId, from, to)
+      .then(({ data }) => setBookedSlots(data))
+      .catch(() => {})
+  }, [date, vendorProfileId])
+
+  // Auto-set endTime for phone (10 min max)
+  useEffect(() => {
+    if (meetingType === 'phone' && startTime) {
+      const [h, m] = startTime.split(':').map(Number)
+      const totalMin = h * 60 + m + 10
+      const eh = Math.floor(totalMin / 60).toString().padStart(2, '0')
+      const em = (totalMin % 60).toString().padStart(2, '0')
+      setEndTime(`${eh}:${em}`)
+    }
+  }, [meetingType, startTime])
+
+  function generateMeetUrl() {
+    // Generate a Google Calendar link that creates a Meet
+    const start = date && startTime ? `${date.replace(/-/g, '')}T${startTime.replace(':', '')}00` : ''
+    const end = date && endTime ? `${date.replace(/-/g, '')}T${endTime.replace(':', '')}00` : ''
+    const title = encodeURIComponent(`Cita - ${vendorName}`)
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&add=&details=Cita+agendada+desde+Celebra&location=Google+Meet&crm=BUSY&trp=true`
+    window.open(url, '_blank')
+    // For now set a placeholder - user should paste the actual Meet link
+    toast.success('Se abrió Google Calendar. Copia el link de Meet y pégalo aquí.')
+  }
+
+  // Check if a time slot conflicts
+  const slotsForDate = bookedSlots.filter(s => s.date === date)
+  function isTimeConflict(start: string, end: string) {
+    return slotsForDate.some(s => start < s.endTime && end > s.startTime)
+  }
+  const hasConflict = date && startTime && endTime && isTimeConflict(startTime, endTime)
 
   async function submit(e: FormEvent) {
-    e.preventDefault(); setLoading(true)
+    e.preventDefault()
+    if (hasConflict) { toast.error('Ese horario ya está ocupado'); return }
+    setLoading(true)
     try {
       await bookingService.createAppointment(weddingId, {
-        vendorProfileId, appointmentDate: date, startTime, endTime,
-        meetingType, notes: notes || undefined
+        vendorProfileId, appointmentDate: date, startTime, endTime, meetingType,
+        meetingUrl: meetingType === 'video_call' ? meetingUrl : undefined,
+        location: meetingType === 'phone' ? phoneNumber : meetingType === 'in_person' ? location : undefined,
+        notes: notes || undefined
       })
       toast.success('¡Cita solicitada! El proveedor confirmará pronto.')
       onClose()
@@ -209,31 +257,23 @@ function AppointmentModal({ vendorProfileId, vendorName, weddingId, onClose }: {
     } finally { setLoading(false) }
   }
 
+  const today = new Date().toISOString().split('T')[0]
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-fade-up">
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 animate-fade-up max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-stone-100"><X className="w-5 h-5 text-stone-400" /></button>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 rounded-xl bg-sage-50 flex items-center justify-center"><Calendar className="w-6 h-6 text-sage-600" /></div>
           <div><h2 className="font-display text-xl text-stone-800">Agendar cita</h2><p className="text-sm text-stone-400">con {vendorName}</p></div>
         </div>
         <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">Fecha *</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)}
-              className="input-field" required min={new Date().toISOString().split('T')[0]} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-sm font-medium text-stone-700 mb-1.5">Hora inicio *</label>
-              <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="input-field" required /></div>
-            <div><label className="block text-sm font-medium text-stone-700 mb-1.5">Hora fin *</label>
-              <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="input-field" required /></div>
-          </div>
+          {/* Meeting type */}
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1.5">Tipo de reunión</label>
             <div className="grid grid-cols-3 gap-2">
-              {[{ value: 'video_call', label: 'Video', icon: Video }, { value: 'in_person', label: 'Presencial', icon: MapPinIcon }, { value: 'phone', label: 'Teléfono', icon: PhoneCall }]
+              {[{ value: 'video_call', label: 'Videollamada', icon: Video }, { value: 'in_person', label: 'Presencial', icon: MapPinIcon }, { value: 'phone', label: 'Teléfono', icon: PhoneCall }]
                 .map(t => (
                   <button key={t.value} type="button" onClick={() => setMeetingType(t.value)}
                     className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-sm ${meetingType === t.value ? 'border-sage-500 bg-sage-50 text-sage-700' : 'border-stone-200 text-stone-500 hover:border-stone-300'}`}>
@@ -242,6 +282,65 @@ function AppointmentModal({ vendorProfileId, vendorName, weddingId, onClose }: {
                 ))}
             </div>
           </div>
+
+          {/* Date */}
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1.5">Fecha *</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="input-field" required min={today} />
+          </div>
+
+          {/* Booked slots for selected date */}
+          {date && slotsForDate.length > 0 && (
+            <div className="bg-champagne-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-champagne-700 mb-2">Horarios ocupados este día:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {slotsForDate.map((s, i) => (
+                  <span key={i} className="px-2 py-0.5 rounded-md bg-champagne-200/60 text-champagne-800 text-xs font-medium">{s.startTime.slice(0,5)} - {s.endTime.slice(0,5)}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Time */}
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="block text-sm font-medium text-stone-700 mb-1.5">Hora inicio *</label>
+              <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="input-field" required /></div>
+            <div><label className="block text-sm font-medium text-stone-700 mb-1.5">Hora fin *</label>
+              <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className={`input-field ${meetingType === 'phone' ? 'bg-stone-50 text-stone-400' : ''}`} required readOnly={meetingType === 'phone'} /></div>
+          </div>
+          {meetingType === 'phone' && <p className="text-xs text-stone-400 -mt-2">Las llamadas telefónicas tienen una duración máxima de 10 minutos.</p>}
+          {hasConflict && <p className="text-xs text-blush-600 font-medium -mt-2">⚠ Este horario se traslapa con una cita existente. Elige otro horario.</p>}
+
+          {/* Type-specific fields */}
+          {meetingType === 'video_call' && (
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">Link de Google Meet *</label>
+              <div className="flex gap-2">
+                <input value={meetingUrl} onChange={e => setMeetingUrl(e.target.value)} className="input-field flex-1"
+                  placeholder="https://meet.google.com/xxx-xxx-xxx" required />
+                <button type="button" onClick={generateMeetUrl} className="btn-secondary text-xs whitespace-nowrap px-3" title="Crear reunión en Google Calendar">
+                  <Video className="w-4 h-4" /> Crear Meet
+                </button>
+              </div>
+              <p className="text-xs text-stone-400 mt-1">Genera una invitación de Google Meet y pega el enlace aquí.</p>
+            </div>
+          )}
+          {meetingType === 'phone' && (
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">Tu número de teléfono *</label>
+              <input value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="input-field"
+                placeholder="+502 1234 5678" required />
+              <p className="text-xs text-stone-400 mt-1">El proveedor te llamará a este número.</p>
+            </div>
+          )}
+          {meetingType === 'in_person' && (
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">Lugar de reunión</label>
+              <input value={location} onChange={e => setLocation(e.target.value)} className="input-field"
+                placeholder="Dirección o punto de encuentro" />
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1.5">Notas (opcional)</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
@@ -249,7 +348,7 @@ function AppointmentModal({ vendorProfileId, vendorName, weddingId, onClose }: {
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancelar</button>
-            <button type="submit" disabled={loading || !date} className="btn-primary flex-1 disabled:opacity-50">
+            <button type="submit" disabled={loading || !date || !!hasConflict || (meetingType === 'video_call' && !meetingUrl) || (meetingType === 'phone' && !phoneNumber)} className="btn-primary flex-1 disabled:opacity-50">
               {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Solicitar cita'}
             </button>
           </div>

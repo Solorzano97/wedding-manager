@@ -11,7 +11,7 @@ export const bookingService = {
   updateQuoteStatus: (weddingId: number, uuid: string, status: string) =>
     api.patch<QuoteResponse>(`/weddings/${weddingId}/quotes/${uuid}/status`, { status }),
 
-  createAppointment: (weddingId: number, data: { vendorProfileId: number; appointmentDate: string; startTime: string; endTime: string; meetingType?: string; notes?: string }) =>
+  createAppointment: (weddingId: number, data: { vendorProfileId: number; appointmentDate: string; startTime: string; endTime: string; meetingType?: string; meetingUrl?: string; location?: string; notes?: string }) =>
     api.post<AppointmentResponse>(`/weddings/${weddingId}/appointments`, data),
   listAppointments: (weddingId: number, page = 0, size = 10) =>
     api.get<PageResponse<AppointmentResponse>>(`/weddings/${weddingId}/appointments`, { params: { page, size } }),
@@ -29,4 +29,9 @@ export const bookingService = {
     api.patch<QuoteResponse>(`/vendors/me/quotes/${uuid}/status`, { status }),
   vendorRespondQuote: (uuid: string, data: { subtotal: number; discountAmount?: number; taxAmount?: number; totalAmount: number; validUntil?: string; notes?: string }) =>
     api.put<QuoteResponse>(`/vendors/me/quotes/${uuid}/respond`, data),
+
+  // Public availability
+  getBookedSlots: (vendorProfileId: number, from: string, to: string) =>
+    api.get<{ date: string; startTime: string; endTime: string; meetingType: string; status: string }[]>(
+      `/vendors/${vendorProfileId}/booked-slots`, { params: { from, to } }),
 }

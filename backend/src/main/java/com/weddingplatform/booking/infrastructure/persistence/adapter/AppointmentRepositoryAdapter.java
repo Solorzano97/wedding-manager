@@ -6,6 +6,8 @@ import com.weddingplatform.booking.infrastructure.persistence.repository.JpaAppo
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -25,6 +27,10 @@ public class AppointmentRepositoryAdapter implements AppointmentRepository {
     @Override public Optional<Appointment> findByUuid(String uuid) { return jpa.findByUuid(uuid).map(this::toDomain); }
     @Override public Page<Appointment> findByWeddingId(Long wid, Pageable p) { return jpa.findByWeddingId(wid, p).map(this::toDomain); }
     @Override public Page<Appointment> findByVendorProfileId(Long vpid, Pageable p) { return jpa.findByVendorProfileId(vpid, p).map(this::toDomain); }
+    @Override public List<Appointment> findConfirmedByVendor(Long vpid, LocalDate from, LocalDate to) {
+        return jpa.findByVendorProfileIdAndAppointmentDateBetweenAndStatusIn(vpid, from, to,
+            List.of("requested", "confirmed", "scheduled")).stream().map(this::toDomain).toList();
+    }
     private Appointment toDomain(AppointmentEntity e) {
         return new Appointment(e.getId(), e.getUuid(), e.getWeddingId(), e.getVendorProfileId(), e.getCoupleProfileId(),
             e.getQuoteId(), e.getAppointmentDate(), e.getStartTime(), e.getEndTime(), e.getMeetingType(),
