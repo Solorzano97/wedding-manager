@@ -24,9 +24,8 @@ export default function Footer() {
                     <div>
                         <h4 className="font-medium text-white mb-4">Para Proveedores</h4>
                         <nav className="space-y-2 text-sm">
-                            <a href="#" className="block hover:text-white transition-colors">Registrarse</a>
+                            <Link to="/register" className="block hover:text-white transition-colors">Registrarse</Link>
                             <a href="#" className="block hover:text-white transition-colors">Planes</a>
-                            <a href="#" className="block hover:text-white transition-colors">Recursos</a>
                         </nav>
                     </div>
                     <div>

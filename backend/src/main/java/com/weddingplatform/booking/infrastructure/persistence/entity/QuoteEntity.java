@@ -8,7 +8,8 @@ import java.time.LocalDate;
 public class QuoteEntity extends BaseEntity {
     @Column(nullable = false, unique = true, length = 36) private String uuid;
     @Column(name = "wedding_id", nullable = false) private Long weddingId;
-    @Column(name = "vendor_service_id", nullable = false) private Long vendorServiceId;
+    @Column(name = "vendor_profile_id", nullable = false) private Long vendorProfileId;
+    @Column(name = "vendor_service_id") private Long vendorServiceId;
     @Column(name = "requested_by_id", nullable = false) private Long requestedById;
     @Column(nullable = false, length = 20) private String status = "draft";
     @Column(name = "event_date") private LocalDate eventDate;
@@ -24,6 +25,7 @@ public class QuoteEntity extends BaseEntity {
 
     public String getUuid() { return uuid; } public void setUuid(String v) { this.uuid = v; }
     public Long getWeddingId() { return weddingId; } public void setWeddingId(Long v) { this.weddingId = v; }
+    public Long getVendorProfileId() { return vendorProfileId; } public void setVendorProfileId(Long v) { this.vendorProfileId = v; }
     public Long getVendorServiceId() { return vendorServiceId; } public void setVendorServiceId(Long v) { this.vendorServiceId = v; }
     public Long getRequestedById() { return requestedById; } public void setRequestedById(Long v) { this.requestedById = v; }
     public String getStatus() { return status; } public void setStatus(String v) { this.status = v; }

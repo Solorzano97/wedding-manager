@@ -7,12 +7,17 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 public final class BookingDtos {
     private BookingDtos() {}
-    public record CreateQuoteRequest(@NotNull Long vendorServiceId, LocalDate eventDate,
-        Integer guestCount, String customRequirements, String notes) {}
-    public record QuoteResponse(Long id, String uuid, Long weddingId, Long vendorServiceId,
-        String status, LocalDate eventDate, Integer guestCount, BigDecimal totalAmount,
-        String currencyCode, LocalDate validUntil, String notes, LocalDateTime createdAt) {}
+
+    // --- Quotes ---
+    public record CreateQuoteRequest(@NotNull Long vendorProfileId, Long vendorServiceId,
+        LocalDate eventDate, Integer guestCount, String customRequirements, String notes) {}
+    public record QuoteResponse(Long id, String uuid, Long weddingId, Long vendorProfileId,
+        Long vendorServiceId, String status, LocalDate eventDate, Integer guestCount,
+        BigDecimal totalAmount, String currencyCode, LocalDate validUntil,
+        String customRequirements, String notes, LocalDateTime createdAt) {}
     public record UpdateQuoteStatusRequest(@NotBlank String status) {}
+
+    // --- Appointments ---
     public record CreateAppointmentRequest(@NotNull Long vendorProfileId,
         @NotNull LocalDate appointmentDate, @NotNull LocalTime startTime, @NotNull LocalTime endTime,
         String meetingType, String meetingUrl, String location, String notes) {}

@@ -34,6 +34,11 @@ public class ManageAppointmentsUseCase {
         return PageResponse.of(apptRepo.findByWeddingId(weddingId, pageable).map(this::toResponse));
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<AppointmentResponse> getByVendorProfile(Long vendorProfileId, Pageable pageable) {
+        return PageResponse.of(apptRepo.findByVendorProfileId(vendorProfileId, pageable).map(this::toResponse));
+    }
+
     @Transactional
     public AppointmentResponse updateStatus(String uuid, UpdateAppointmentStatusRequest req) {
         Appointment a = apptRepo.findByUuid(uuid).orElseThrow(() -> new ResourceNotFoundException("Appointment", "uuid", uuid));

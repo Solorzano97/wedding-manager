@@ -19,12 +19,48 @@ public class VendorController {
     private final ManageVendorsUseCase uc;
     public VendorController(ManageVendorsUseCase uc) { this.uc = uc; }
 
+    // === Profile ===
     @PostMapping("/vendors/profile") @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<VendorProfileResponse> createProfile(@AuthenticationPrincipal UserPrincipal p,
         @Valid @RequestBody CreateVendorProfileRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(uc.createProfile(p.getId(), req));
     }
 
+    @GetMapping("/vendors/me") @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<VendorProfileResponse> getMyProfile(@AuthenticationPrincipal UserPrincipal p) {
+        return ResponseEntity.ok(uc.getMyProfile(p.getId()));
+    }
+
+    @PutMapping("/vendors/me") @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<VendorProfileResponse> updateProfile(@AuthenticationPrincipal UserPrincipal p,
+        @Valid @RequestBody UpdateVendorProfileRequest req) {
+        return ResponseEntity.ok(uc.updateProfile(p.getId(), req));
+    }
+
+    // === Vendor Services ===
+    @PostMapping("/vendors/me/services") @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<VendorServiceResponse> addService(@AuthenticationPrincipal UserPrincipal p,
+        @Valid @RequestBody CreateVendorServiceRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(uc.addService(p.getId(), req));
+    }
+
+    @GetMapping("/vendors/me/services") @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<List<VendorServiceResponse>> getMyServices(@AuthenticationPrincipal UserPrincipal p) {
+        return ResponseEntity.ok(uc.getMyServices(p.getId()));
+    }
+
+    @GetMapping("/vendors/{slug}/services")
+    public ResponseEntity<List<VendorServiceResponse>> getVendorServices(@PathVariable String slug) {
+        VendorProfileResponse profile = uc.getBySlug(slug);
+        return ResponseEntity.ok(uc.getServicesByVendor(profile.id()));
+    }
+
+    @DeleteMapping("/vendors/me/services/{serviceId}") @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<Void> deleteService(@AuthenticationPrincipal UserPrincipal p, @PathVariable Long serviceId) {
+        uc.deleteService(p.getId(), serviceId); return ResponseEntity.noContent().build();
+    }
+
+    // === Public catalog ===
     @GetMapping("/vendors")
     public ResponseEntity<PageResponse<VendorProfileResponse>> search(
         @RequestParam(required = false) String city, @RequestParam(required = false) String category,

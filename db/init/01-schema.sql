@@ -468,7 +468,8 @@ CREATE TABLE quotes (
     id                  BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     uuid                CHAR(36)        NOT NULL,
     wedding_id          BIGINT UNSIGNED NOT NULL,
-    vendor_service_id   BIGINT UNSIGNED NOT NULL,
+    vendor_profile_id   BIGINT UNSIGNED NOT NULL,            -- proveedor al que se solicita
+    vendor_service_id   BIGINT UNSIGNED NULL,                -- servicio específico (opcional)
     requested_by_id     BIGINT UNSIGNED NOT NULL,          -- couple_profile
     status              ENUM('draft','sent','viewed','accepted','rejected','expired')
                                         NOT NULL DEFAULT 'draft',
@@ -486,10 +487,12 @@ CREATE TABLE quotes (
     updated_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_quotes_wedding  FOREIGN KEY (wedding_id)       REFERENCES weddings(id)         ON DELETE CASCADE,
-    CONSTRAINT fk_quotes_service  FOREIGN KEY (vendor_service_id) REFERENCES vendor_services(id)  ON DELETE RESTRICT,
+    CONSTRAINT fk_quotes_vendor   FOREIGN KEY (vendor_profile_id) REFERENCES vendor_profiles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_quotes_service  FOREIGN KEY (vendor_service_id) REFERENCES vendor_services(id)  ON DELETE SET NULL,
     CONSTRAINT fk_quotes_couple   FOREIGN KEY (requested_by_id)  REFERENCES couple_profiles(id)  ON DELETE CASCADE,
     CONSTRAINT uq_quotes_uuid     UNIQUE (uuid),
     INDEX idx_quotes_wedding (wedding_id),
+    INDEX idx_quotes_vendor (vendor_profile_id),
     INDEX idx_quotes_vendor_svc (vendor_service_id),
     INDEX idx_quotes_status (status)
 ) ENGINE=InnoDB;

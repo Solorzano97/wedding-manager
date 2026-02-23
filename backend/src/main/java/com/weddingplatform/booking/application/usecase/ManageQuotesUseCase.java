@@ -23,7 +23,8 @@ public class ManageQuotesUseCase {
     public QuoteResponse createQuote(Long userId, Long weddingId, CreateQuoteRequest req) {
         var profile = coupleRepo.findByUserId(userId)
             .orElseThrow(() -> new ResourceNotFoundException("CoupleProfile", "userId", userId));
-        Quote quote = new Quote(null, UUID.randomUUID().toString(), weddingId, req.vendorServiceId(),
+        Quote quote = new Quote(null, UUID.randomUUID().toString(), weddingId,
+            req.vendorProfileId(), req.vendorServiceId(),
             profile.id(), "draft", req.eventDate(), req.guestCount(), req.customRequirements(),
             BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, "GTQ",
             null, req.notes(), null);
@@ -35,19 +36,25 @@ public class ManageQuotesUseCase {
         return PageResponse.of(quoteRepo.findByWeddingId(weddingId, pageable).map(this::toResponse));
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<QuoteResponse> getByVendorProfile(Long vendorProfileId, Pageable pageable) {
+        return PageResponse.of(quoteRepo.findByVendorProfileId(vendorProfileId, pageable).map(this::toResponse));
+    }
+
     @Transactional
     public QuoteResponse updateStatus(String uuid, UpdateQuoteStatusRequest req) {
         Quote q = quoteRepo.findByUuid(uuid).orElseThrow(() -> new ResourceNotFoundException("Quote", "uuid", uuid));
-        Quote updated = new Quote(q.id(), q.uuid(), q.weddingId(), q.vendorServiceId(), q.requestedById(),
-            req.status(), q.eventDate(), q.guestCount(), q.customRequirements(),
+        Quote updated = new Quote(q.id(), q.uuid(), q.weddingId(), q.vendorProfileId(), q.vendorServiceId(),
+            q.requestedById(), req.status(), q.eventDate(), q.guestCount(), q.customRequirements(),
             q.subtotal(), q.discountAmount(), q.taxAmount(), q.totalAmount(),
             q.currencyCode(), q.validUntil(), q.notes(), q.createdAt());
         return toResponse(quoteRepo.save(updated));
     }
 
     private QuoteResponse toResponse(Quote q) {
-        return new QuoteResponse(q.id(), q.uuid(), q.weddingId(), q.vendorServiceId(),
-            q.status(), q.eventDate(), q.guestCount(), q.totalAmount(),
-            q.currencyCode(), q.validUntil(), q.notes(), q.createdAt());
+        return new QuoteResponse(q.id(), q.uuid(), q.weddingId(), q.vendorProfileId(),
+            q.vendorServiceId(), q.status(), q.eventDate(), q.guestCount(),
+            q.totalAmount(), q.currencyCode(), q.validUntil(),
+            q.customRequirements(), q.notes(), q.createdAt());
     }
 }

@@ -14,7 +14,7 @@ export interface Wedding {
 export interface VendorProfile {
   id: number; businessName: string; slug: string; description: string | null
   logoUrl: string | null; coverImageUrl: string | null; phone: string | null
-  city: string | null; state: string | null; country: string
+  websiteUrl: string | null; city: string | null; state: string | null; country: string
   avgRating: number; totalReviews: number; verified: boolean; featured: boolean
   serviceCategories: string[]
 }

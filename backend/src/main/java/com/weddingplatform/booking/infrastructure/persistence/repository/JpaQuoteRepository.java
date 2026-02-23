@@ -8,4 +8,5 @@ public interface JpaQuoteRepository extends JpaRepository<QuoteEntity, Long> {
     Optional<QuoteEntity> findByUuid(String uuid);
     Page<QuoteEntity> findByWeddingId(Long weddingId, Pageable pageable);
     Page<QuoteEntity> findByVendorServiceId(Long vendorServiceId, Pageable pageable);
+    Page<QuoteEntity> findByVendorProfileId(Long vendorProfileId, Pageable pageable);
 }

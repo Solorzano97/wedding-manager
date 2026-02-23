@@ -9,4 +9,5 @@ public interface QuoteRepository {
     Optional<Quote> findByUuid(String uuid);
     Page<Quote> findByWeddingId(Long weddingId, Pageable pageable);
     Page<Quote> findByVendorServiceId(Long vendorServiceId, Pageable pageable);
+    Page<Quote> findByVendorProfileId(Long vendorProfileId, Pageable pageable);
 }

@@ -6,7 +6,14 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import VendorsPage from './pages/VendorsPage'
+import VendorDetailPage from './pages/VendorDetailPage'
 import DashboardPage from './pages/DashboardPage'
+import GuestsPage from './pages/GuestsPage'
+import BudgetPage from './pages/BudgetPage'
+import QuotesPage from './pages/QuotesPage'
+import AppointmentsPage from './pages/AppointmentsPage'
+import VendorProfilePage from './pages/VendorProfilePage'
+import MessagesPage from './pages/MessagesPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -26,14 +33,16 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/vendors" element={<VendorsPage />} />
+        <Route path="/vendors/:slug" element={<VendorDetailPage />} />
 
-        {/* Dashboard nested routes — all share sidebar + header via DashboardLayout */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<DashboardPage />} />
-          {/* Future sub-pages go here:
-            <Route path="guests" element={<GuestsPage />} />
-            <Route path="budget" element={<BudgetPage />} />
-          */}
+          <Route path="guests" element={<GuestsPage />} />
+          <Route path="budget" element={<BudgetPage />} />
+          <Route path="quotes" element={<QuotesPage />} />
+          <Route path="appointments" element={<AppointmentsPage />} />
+          <Route path="messages" element={<MessagesPage />} />
+          <Route path="vendor-profile" element={<VendorProfilePage />} />
         </Route>
       </Routes>
     </>
